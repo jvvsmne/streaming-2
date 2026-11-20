@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { ConsentBanner } from './components/ConsentBanner';
 import { ContentRail } from './components/ContentRail';
 import { DiscoveryBar, RegionFilter, SubtitleFilter } from './components/DiscoveryBar';
 import { Footer } from './components/Footer';
@@ -10,8 +11,15 @@ import { SignInModal } from './components/SignInModal';
 import { NavTab, TopBar } from './components/TopBar';
 import { VideoPlayerModal } from './components/VideoPlayerModal';
 import { Episode, HERO_SLIDE_IDS, SHOW_CATALOG, Show } from './data/catalog';
+import { variant, track, consent, setConsent, loadClarity } from './pt';
 
 export default function App() {
+  const [activeVariant] = useState(() => variant());
+  const [consentChoice, setConsentChoice] = useState<'granted' | 'denied' | null>(() =>
+    consent()
+  );
+  const hasTrackedScreenView = useRef(false);
+
   const [activeNav, setActiveNav] = useState<NavTab>('Home');
   const [regionFilter, setRegionFilter] = useState<RegionFilter>('All');
   const [subtitleFilter, setSubtitleFilter] = useState<SubtitleFilter>('All');
@@ -34,6 +42,16 @@ export default function App() {
   const [authModalMode, setAuthModalMode] = useState<'signup' | 'signin'>('signup');
   const [signedInEmail, setSignedInEmail] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (consent() === 'granted') {
+      loadClarity();
+    }
+    if (!hasTrackedScreenView.current) {
+      hasTrackedScreenView.current = true;
+      track('screen_view');
+    }
+  }, []);
+
   const openSignUpModal = useCallback(() => {
     setAuthModalMode('signup');
     setIsSignInOpen(true);
@@ -42,6 +60,16 @@ export default function App() {
   const openAccountModal = useCallback(() => {
     setAuthModalMode('signin');
     setIsSignInOpen(true);
+  }, []);
+
+  const handleCtaSignUp = useCallback(() => {
+    track('cta_click', { button: 'sign_up' });
+    openSignUpModal();
+  }, [openSignUpModal]);
+
+  const handleCtaPremium = useCallback(() => {
+    track('cta_click', { button: 'go_premium' });
+    setIsPremiumOpen(true);
   }, []);
 
   const heroSlides = useMemo(
@@ -222,9 +250,9 @@ export default function App() {
       <TopBar
         activeNav={activeNav}
         onSelectNav={handleSelectNav}
-        onOpenSignUp={openSignUpModal}
+        onOpenSignUp={handleCtaSignUp}
         onOpenAccount={openAccountModal}
-        onOpenPremium={() => setIsPremiumOpen(true)}
+        onOpenPremium={handleCtaPremium}
         signedInEmail={signedInEmail}
         isPremiumMember={isPremiumMember}
         myListCount={myListIds.length}
@@ -236,7 +264,8 @@ export default function App() {
             slides={heroSlides}
             myListIds={myListIds}
             signedInEmail={signedInEmail}
-            onSignUpClick={openSignUpModal}
+            showSignUpPrompt={activeVariant === 'B'}
+            onSignUpClick={handleCtaSignUp}
             onAccountClick={openAccountModal}
             onPlayLatestEpisode={handlePlayShow}
             onSelectShow={setSelectedShow}
@@ -337,7 +366,7 @@ export default function App() {
 
             <PremiumHighlights
               isPremiumMember={isPremiumMember}
-              onOpenPremium={() => setIsPremiumOpen(true)}
+              onOpenPremium={handleCtaPremium}
             />
 
             <ContentRail
@@ -416,8 +445,8 @@ export default function App() {
       <Footer
         signedInEmail={signedInEmail}
         onSelectNav={handleSelectNav}
-        onOpenSignUp={openSignUpModal}
-        onOpenPremium={() => setIsPremiumOpen(true)}
+        onOpenSignUp={handleCtaSignUp}
+        onOpenPremium={handleCtaPremium}
       />
 
       <ShowDetailModal
@@ -476,8 +505,11 @@ export default function App() {
         initialMode={authModalMode}
         signedInEmail={signedInEmail}
         onClose={() => setIsSignInOpen(false)}
-        onSignIn={(email) => {
+        onSignIn={(email, isNewSignUp) => {
           setSignedInEmail(email);
+          if (isNewSignUp) {
+            track('goal_complete');
+          }
           setProgressMap((prev) =>
             Object.keys(prev).length > 0
               ? prev
@@ -507,6 +539,19 @@ export default function App() {
           }
         }}
       />
+
+      {consentChoice === null && (
+        <ConsentBanner
+          onAccept={() => {
+            setConsent('granted');
+            setConsentChoice('granted');
+          }}
+          onDecline={() => {
+            setConsent('denied');
+            setConsentChoice('denied');
+          }}
+        />
+      )}
     </div>
   );
 }

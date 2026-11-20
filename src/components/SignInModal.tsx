@@ -7,7 +7,7 @@ interface SignInModalProps {
   initialMode?: 'signup' | 'signin';
   signedInEmail: string | null;
   onClose: () => void;
-  onSignIn: (email: string) => void;
+  onSignIn: (email: string, isNewSignUp: boolean) => void;
   onSignOut: () => void;
 }
 
@@ -56,7 +56,7 @@ export function SignInModal({
       return;
     }
     setError(null);
-    onSignIn(trimmed);
+    onSignIn(trimmed, isSignUp);
     setPassword('');
     onClose();
   };

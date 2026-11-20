@@ -16,6 +16,7 @@ interface HeroCarouselProps {
   slides: Show[];
   myListIds: string[];
   signedInEmail: string | null;
+  showSignUpPrompt: boolean;
   onSignUpClick: () => void;
   onAccountClick: () => void;
   onPlayLatestEpisode: (show: Show, episodeNumber: number) => void;
@@ -27,6 +28,7 @@ export function HeroCarousel({
   slides,
   myListIds,
   signedInEmail,
+  showSignUpPrompt,
   onSignUpClick,
   onAccountClick,
   onPlayLatestEpisode,
@@ -49,7 +51,6 @@ export function HeroCarousel({
   const isSaved = myListIds.includes(current.id);
   const latestEp = current.episodes[current.episodes.length - 1];
   const latestEpNum = latestEp?.number ?? current.availableEpisodes;
-  const isLatestLocked = Boolean(latestEp?.requiresSignIn && !signedInEmail);
 
   const goPrev = () => {
     setActiveIndex((prev) => (prev - 1 + slides.length) % slides.length);
@@ -136,9 +137,9 @@ export function HeroCarousel({
               {current.synopsis}
             </p>
 
-            {/* Latest Episode Lock / Priority Access Status */}
-            <div className="mt-4">
-              {!signedInEmail ? (
+            {/* Sign-up prompt under test (shown only in Version B when signed out) */}
+            {!signedInEmail && showSignUpPrompt && (
+              <div className="mt-4 flex flex-col items-start gap-2.5">
                 <div className="inline-flex items-center gap-2 rounded-md border border-[#FF6B00]/40 bg-[#1A1A1E]/90 px-3 py-1.5 text-xs sm:text-sm text-[#F5F5F7]">
                   <Lock className="h-3.5 w-3.5 shrink-0 text-[#FF6B00]" aria-hidden="true" />
                   <span>
@@ -147,7 +148,19 @@ export function HeroCarousel({
                     <span className="font-semibold text-[#FF6B00]">Priority Access</span> for members
                   </span>
                 </div>
-              ) : (
+                <button
+                  type="button"
+                  onClick={onSignUpClick}
+                  className="animate-uwatch-flash inline-flex items-center gap-2 rounded-md bg-[#FF6B00] px-5 py-3 text-sm sm:text-base font-extrabold tracking-wide text-[#111113] transition-colors duration-150 hover:bg-[#FF8533] shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF6B00]"
+                >
+                  <Sparkles className="h-4 w-4 stroke-[2.5] shrink-0" aria-hidden="true" />
+                  <span>Sign Up for Priority Access · Unlock Ep {latestEpNum}</span>
+                </button>
+              </div>
+            )}
+
+            {signedInEmail && (
+              <div className="mt-4">
                 <div className="inline-flex flex-wrap items-center gap-2 rounded-md border border-emerald-400/35 bg-[#1A1A1E]/90 px-3 py-1.5 text-xs sm:text-sm text-[#F5F5F7]">
                   <Check className="h-3.5 w-3.5 shrink-0 text-emerald-400" aria-hidden="true" />
                   <span>
@@ -161,18 +174,18 @@ export function HeroCarousel({
                     Account
                   </button>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             <div className="mt-4 flex flex-wrap items-center gap-3">
-              {isLatestLocked ? (
+              {!signedInEmail ? (
                 <button
                   type="button"
-                  onClick={onSignUpClick}
-                  className="animate-uwatch-flash inline-flex items-center gap-2 rounded-md bg-[#FF6B00] px-5 py-3 text-sm sm:text-base font-extrabold tracking-wide text-[#111113] transition-colors duration-150 hover:bg-[#FF8533] shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF6B00]"
+                  onClick={() => onPlayLatestEpisode(current, 1)}
+                  className="inline-flex items-center gap-2 rounded-md bg-white px-5 py-2.5 text-sm font-bold text-[#111113] transition-colors duration-150 hover:bg-[#E4E4E7] shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF6B00]"
                 >
-                  <Sparkles className="h-4 w-4 stroke-[2.5] shrink-0" aria-hidden="true" />
-                  <span>Sign Up for Priority Access · Unlock Ep {latestEpNum}</span>
+                  <Play className="h-4 w-4 fill-current shrink-0" aria-hidden="true" />
+                  <span>Watch Ep 1</span>
                 </button>
               ) : (
                 <button
