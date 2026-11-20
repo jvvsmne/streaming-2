@@ -11,6 +11,7 @@ export interface Episode {
   synopsis: string;
   thumbnail: string;
   isPremiumOnly: boolean;
+  requiresSignIn?: boolean;
   sampleSubtitles: Record<SubtitleLanguage, string[]>;
 }
 
@@ -28,6 +29,7 @@ export interface Show {
   subtitles: SubtitleLanguage[];
   isOriginal: boolean;
   isPremium: boolean;
+  isAiring?: boolean;
   topRank?: number;
   simulcastNote?: string;
   posterUrl: string;
@@ -59,23 +61,33 @@ function makeEpisodes(
   stillB: string,
   prefix: string,
   freeLimit: number,
-  dialoguePool: { en: string[]; zh: string[]; ms: string[] }
+  dialoguePool: { en: string[]; zh: string[]; ms: string[] },
+  lockLatestForSignIn = false
 ): Episode[] {
   return Array.from({ length: count }, (_, idx) => {
     const epNum = idx + 1;
     const isEven = epNum % 2 === 0;
+    const isLatest = epNum === count;
+    const requiresSignIn = lockLatestForSignIn && isLatest;
     return {
       number: epNum,
       title: `${prefix} ${epNum}`,
       duration: isEven ? '64 min' : '61 min',
       durationSeconds: isEven ? 3840 : 3660,
-      releaseNote: epNum === count ? 'New · 8h after Korea' : 'HD · Multi-Sub',
+      releaseNote: isLatest
+        ? requiresSignIn
+          ? 'Latest · Priority Access'
+          : 'New · 8h after Korea'
+        : 'HD · Multi-Sub',
       synopsis:
         epNum === 1
           ? 'An unexpected encounter sets parallel lives on a collision course across the city.'
-          : `New revelations raise the stakes as alliances shift in episode ${epNum}.`,
+          : isLatest && requiresSignIn
+            ? `Just aired—sign up free to unlock episode ${epNum} with Priority Access.`
+            : `New revelations raise the stakes as alliances shift in episode ${epNum}.`,
       thumbnail: isEven ? stillB : stillA,
-      isPremiumOnly: epNum > freeLimit,
+      isPremiumOnly: requiresSignIn ? false : epNum > freeLimit,
+      requiresSignIn,
       sampleSubtitles: {
         English: dialoguePool.en,
         中文: dialoguePool.zh,
@@ -94,21 +106,22 @@ export const SHOW_CATALOG: Show[] = [
     category: 'K-Drama',
     year: 2026,
     totalEpisodes: 16,
-    availableEpisodes: 12,
+    availableEpisodes: 8,
     genres: ['Romance', 'Melodrama'],
     audioLanguage: 'Korean',
     subtitles: ['English', '中文', 'Bahasa'],
     isOriginal: true,
     isPremium: false,
+    isAiring: true,
     topRank: 1,
-    simulcastNote: 'New Ep Thu & Fri',
+    simulcastNote: 'Currently Airing · New Ep Thu & Fri',
     posterUrl: IMAGES.posterHospital,
     backdropUrl: IMAGES.heroSeoulRomance,
     cast: ['Lee Do-hyun', 'Shin Hye-sun', 'Kim Jae-wook'],
     director: 'Ahn Pan-seok',
     synopsis:
       'Seven years after parting on a rainy Seoul bridge, an architectural restorer and a cellist cross paths while renovating a riverside concert hall.',
-    episodes: makeEpisodes(8, IMAGES.heroSeoulRomance, IMAGES.stillCafe, 'Chapter', 4, {
+    episodes: makeEpisodes(8, IMAGES.heroSeoulRomance, IMAGES.stillCafe, 'Chapter', 7, {
       en: [
         'I walked across this bridge every October hoping you might look back.',
         'Some melodies wait seven winters before anyone dares to play them again.',
@@ -124,7 +137,7 @@ export const SHOW_CATALOG: Show[] = [
         'Ada melodi yang menunggu tujuh musim sejuk sebelum dimainkan semula.',
         'Tunggu—jangan tinggalkan payung awak kali ini.',
       ],
-    }),
+    }, true),
   },
   {
     id: 'crown-of-silent-lanterns',
@@ -134,21 +147,22 @@ export const SHOW_CATALOG: Show[] = [
     category: 'K-Drama',
     year: 2026,
     totalEpisodes: 20,
-    availableEpisodes: 14,
+    availableEpisodes: 10,
     genres: ['Historical', 'Thriller'],
     audioLanguage: 'Korean',
     subtitles: ['English', '中文', 'Bahasa'],
     isOriginal: true,
     isPremium: true,
+    isAiring: true,
     topRank: 2,
-    simulcastNote: 'Viu Original · 8h Simulcast',
+    simulcastNote: 'Currently Airing · 8h Simulcast',
     posterUrl: IMAGES.posterMystery,
     backdropUrl: IMAGES.heroJoseonCrown,
     cast: ['Ju Ji-hoon', 'Han Hyo-joo', 'Heo Joon-ho'],
     director: 'Kim Sung-hoon',
     synopsis:
       'When sealed royal ledgers vanish from the palace archive, a disgraced royal scribe uncovers a conspiracy reaching the inner throne room.',
-    episodes: makeEpisodes(8, IMAGES.heroJoseonCrown, IMAGES.stillPalace, 'Chronicle', 2, {
+    episodes: makeEpisodes(10, IMAGES.heroJoseonCrown, IMAGES.stillPalace, 'Chronicle', 4, {
       en: [
         'Every lantern lit in the eastern courtyard marks a secret we swore to bury.',
         'Read the ink beneath the wax seal before dawn reaches the gate.',
@@ -164,7 +178,7 @@ export const SHOW_CATALOG: Show[] = [
         'Baca tulisan di bawah mohor lilin sebelum fajar tiba di pintu istana.',
         'Takhta mengingati kesetiaan lebih lama daripada memaafkan kebisuan.',
       ],
-    }),
+    }, true),
   },
   {
     id: 'neon-rain-precinct-9',
@@ -374,21 +388,22 @@ export const SHOW_CATALOG: Show[] = [
     category: 'Anime',
     year: 2026,
     totalEpisodes: 24,
-    availableEpisodes: 18,
+    availableEpisodes: 12,
     genres: ['Dark Fantasy', 'Action'],
     audioLanguage: 'Japanese',
     subtitles: ['English', '中文'],
     isOriginal: false,
     isPremium: true,
+    isAiring: true,
     topRank: 8,
-    simulcastNote: 'Simulcast · 1080p',
+    simulcastNote: 'Currently Airing · New Ep Sun',
     posterUrl: IMAGES.posterAnime,
     backdropUrl: IMAGES.heroTokyoNoir,
     cast: ['Kenjiro Tsuda', 'Saori Hayami', 'Yuichi Nakamura'],
     director: 'Haruo Sotozaki',
     synopsis:
       'In a mountain realm shrouded in twilight ash, a wandering blade-smith hunts spirit-forged relics before the eclipse awakens the old seal.',
-    episodes: makeEpisodes(6, IMAGES.heroTokyoNoir, IMAGES.stillPalace, 'Act', 3, {
+    episodes: makeEpisodes(12, IMAGES.heroTokyoNoir, IMAGES.stillPalace, 'Act', 5, {
       en: [
         'Steel remembers the hand that tempered it—never the oath that broke.',
         'Do not draw the crescent edge until the mist clears the ridge.',
@@ -404,7 +419,7 @@ export const SHOW_CATALOG: Show[] = [
         'Jangan hunus bilah sabit sehingga kabus di rabung gunung reda.',
         'Di bawah bulan ini, bayang-bayang juga memiliki mata pedangnya sendiri.',
       ],
-    }),
+    }, true),
   },
   {
     id: 'the-verdict-rain',
@@ -569,5 +584,5 @@ export const SHOW_CATALOG: Show[] = [
 export const HERO_SLIDE_IDS = [
   'autumn-over-hangang',
   'crown-of-silent-lanterns',
-  'neon-rain-precinct-9',
+  'crescent-blade-requiem',
 ];

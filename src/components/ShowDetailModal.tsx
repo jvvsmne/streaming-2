@@ -7,20 +7,24 @@ interface ShowDetailModalProps {
   show: Show | null;
   isSaved: boolean;
   isPremiumMember: boolean;
+  signedInEmail: string | null;
   onClose: () => void;
   onToggleMyList: (showId: string) => void;
   onPlayEpisode: (show: Show, episode: Episode) => void;
   onOpenPremium: () => void;
+  onOpenSignUp: () => void;
 }
 
 export function ShowDetailModal({
   show,
   isSaved,
   isPremiumMember,
+  signedInEmail,
   onClose,
   onToggleMyList,
   onPlayEpisode,
   onOpenPremium,
+  onOpenSignUp,
 }: ShowDetailModalProps) {
   useEffect(() => {
     if (!show) return;
@@ -113,18 +117,20 @@ export function ShowDetailModal({
                 </button>
               )}
 
-              <button
-                type="button"
-                onClick={() => onToggleMyList(show.id)}
-                className="inline-flex items-center gap-2 rounded-md border border-white/15 bg-[#232329] px-4 py-2 text-sm font-semibold text-white hover:bg-[#2C2C34] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
-              >
-                {isSaved ? (
-                  <Check className="h-4 w-4 text-[#FDBE11]" aria-hidden="true" />
-                ) : (
-                  <Bookmark className="h-4 w-4" aria-hidden="true" />
-                )}
-                <span>{isSaved ? 'Saved' : 'My List'}</span>
-              </button>
+              {signedInEmail && (
+                <button
+                  type="button"
+                  onClick={() => onToggleMyList(show.id)}
+                  className="inline-flex items-center gap-2 rounded-md border border-white/15 bg-[#232329] px-4 py-2 text-sm font-semibold text-white hover:bg-[#2C2C34] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                >
+                  {isSaved ? (
+                    <Check className="h-4 w-4 text-[#FDBE11]" aria-hidden="true" />
+                  ) : (
+                    <Bookmark className="h-4 w-4" aria-hidden="true" />
+                  )}
+                  <span>{isSaved ? 'Saved' : 'My List'}</span>
+                </button>
+              )}
             </div>
           </div>
 
@@ -147,29 +153,48 @@ export function ShowDetailModal({
 
           {/* Episodes List */}
           <div className="mt-8">
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
               <h3 className="font-display text-lg font-bold text-white">
                 Episodes ({show.episodes.length} Featured)
               </h3>
-              {!isPremiumMember && (
-                <button
-                  type="button"
-                  onClick={onOpenPremium}
-                  className="text-xs font-semibold text-[#FDBE11] hover:text-[#FFD043] cursor-pointer"
-                >
-                  Unlock all with Viu Premium
-                </button>
-              )}
+              <div className="flex items-center gap-3">
+                {!signedInEmail && show.episodes.some((ep) => ep.requiresSignIn) && (
+                  <button
+                    type="button"
+                    onClick={onOpenSignUp}
+                    className="text-xs font-semibold text-[#FDBE11] hover:text-[#FFD043] cursor-pointer"
+                  >
+                    Sign up for Priority Access to latest ep
+                  </button>
+                )}
+                {!isPremiumMember && show.episodes.some((ep) => ep.isPremiumOnly) && (
+                  <button
+                    type="button"
+                    onClick={onOpenPremium}
+                    className="text-xs font-semibold text-[#A1A1AA] hover:text-[#FDBE11] cursor-pointer"
+                  >
+                    Unlock all with Viu Premium
+                  </button>
+                )}
+              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {show.episodes.map((ep) => {
-                const locked = ep.isPremiumOnly && !isPremiumMember;
+                const signInLocked = Boolean(ep.requiresSignIn && !signedInEmail);
+                const premiumLocked = ep.isPremiumOnly && !isPremiumMember;
+                const locked = signInLocked || premiumLocked;
                 return (
                   <button
                     key={ep.number}
                     type="button"
-                    onClick={() => (locked ? onOpenPremium() : onPlayEpisode(show, ep))}
+                    onClick={() =>
+                      signInLocked
+                        ? onOpenSignUp()
+                        : premiumLocked
+                          ? onOpenPremium()
+                          : onPlayEpisode(show, ep)
+                    }
                     className="group flex items-center gap-3.5 rounded-lg border border-white/[0.06] bg-[#1D1D22] p-2.5 text-left transition-colors hover:bg-[#25252C] cursor-pointer"
                   >
                     <div className="relative aspect-video w-32 shrink-0 overflow-hidden rounded bg-[#111113]">
@@ -179,7 +204,13 @@ export function ShowDetailModal({
                         fallbackTitle={`Ep ${ep.number}`}
                         className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105"
                       />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div
+                        className={`absolute inset-0 flex items-center justify-center transition-opacity ${
+                          locked
+                            ? 'bg-black/50 opacity-100'
+                            : 'bg-black/30 opacity-0 group-hover:opacity-100'
+                        }`}
+                      >
                         {locked ? (
                           <Lock className="h-4 w-4 text-[#FDBE11]" aria-hidden="true" />
                         ) : (
@@ -193,11 +224,15 @@ export function ShowDetailModal({
                         <span className="text-sm font-semibold text-white group-hover:text-[#FDBE11] truncate">
                           Ep {ep.number} · {ep.title}
                         </span>
-                        {locked && (
+                        {signInLocked ? (
+                          <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#FDBE11]">
+                            Priority Lock
+                          </span>
+                        ) : premiumLocked ? (
                           <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#FDBE11]">
                             Premium
                           </span>
-                        )}
+                        ) : null}
                       </div>
                       <p className="mt-1 text-xs text-[#A1A1AA] line-clamp-1">{ep.synopsis}</p>
                       <p className="mt-1 text-[11px] text-[#71717A] tabular-nums">

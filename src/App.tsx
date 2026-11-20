@@ -17,23 +17,32 @@ export default function App() {
   const [subtitleFilter, setSubtitleFilter] = useState<SubtitleFilter>('All');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const [myListIds, setMyListIds] = useState<string[]>([
-    'autumn-over-hangang',
-    'running-man-sg-special',
-  ]);
+  const [myListIds, setMyListIds] = useState<string[]>([]);
   const [progressMap, setProgressMap] = useState<
-    Record<string, { episodeNumber: number; percent: number }>
-  >({
-    'seoul-ward-24': { episodeNumber: 3, percent: 62 },
-    'celadon-mist-chronicles': { episodeNumber: 7, percent: 38 },
-  });
+    Record<string, { episodeNumber: number; percent: number; updatedAt: number }>
+  >({});
 
   const [selectedShow, setSelectedShow] = useState<Show | null>(null);
-  const [playerState, setPlayerState] = useState<{ show: Show; episode: Episode } | null>(null);
+  const [playerState, setPlayerState] = useState<{
+    show: Show;
+    episode: Episode;
+    initialTimeSeconds: number;
+  } | null>(null);
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
   const [isPremiumMember, setIsPremiumMember] = useState(false);
   const [isSignInOpen, setIsSignInOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState<'signup' | 'signin'>('signup');
   const [signedInEmail, setSignedInEmail] = useState<string | null>(null);
+
+  const openSignUpModal = useCallback(() => {
+    setAuthModalMode('signup');
+    setIsSignInOpen(true);
+  }, []);
+
+  const openAccountModal = useCallback(() => {
+    setAuthModalMode('signin');
+    setIsSignInOpen(true);
+  }, []);
 
   const heroSlides = useMemo(
     () =>
@@ -53,10 +62,21 @@ export default function App() {
     (showId: string, episodeNumber: number, percent: number) => {
       setProgressMap((prev) => ({
         ...prev,
-        [showId]: { episodeNumber, percent },
+        [showId]: { episodeNumber, percent, updatedAt: Date.now() },
       }));
     },
     []
+  );
+
+  const getInitialTimeSeconds = useCallback(
+    (showId: string, ep: Episode) => {
+      const saved = progressMap[showId];
+      if (saved && saved.episodeNumber === ep.number && saved.percent > 0) {
+        return Math.round((saved.percent / 100) * ep.durationSeconds);
+      }
+      return 14;
+    },
+    [progressMap]
   );
 
   const handlePlayShow = useCallback(
@@ -65,26 +85,42 @@ export default function App() {
       const ep =
         show.episodes.find((e) => e.number === targetNum) ?? show.episodes[0];
       if (!ep) return;
+      if (ep.requiresSignIn && !signedInEmail) {
+        openSignUpModal();
+        return;
+      }
       if (ep.isPremiumOnly && !isPremiumMember) {
         setIsPremiumOpen(true);
         return;
       }
       setSelectedShow(null);
-      setPlayerState({ show, episode: ep });
+      setPlayerState({
+        show,
+        episode: ep,
+        initialTimeSeconds: getInitialTimeSeconds(show.id, ep),
+      });
     },
-    [progressMap, isPremiumMember]
+    [progressMap, isPremiumMember, signedInEmail, openSignUpModal, getInitialTimeSeconds]
   );
 
   const handlePlayEpisode = useCallback(
     (show: Show, episode: Episode) => {
+      if (episode.requiresSignIn && !signedInEmail) {
+        openSignUpModal();
+        return;
+      }
       if (episode.isPremiumOnly && !isPremiumMember) {
         setIsPremiumOpen(true);
         return;
       }
       setSelectedShow(null);
-      setPlayerState({ show, episode });
+      setPlayerState({
+        show,
+        episode,
+        initialTimeSeconds: getInitialTimeSeconds(show.id, episode),
+      });
     },
-    [isPremiumMember]
+    [isPremiumMember, signedInEmail, openSignUpModal, getInitialTimeSeconds]
   );
 
   const handleSelectNav = useCallback((tab: NavTab) => {
@@ -171,6 +207,14 @@ export default function App() {
     []
   );
 
+  const continueWatchingShows = useMemo(() => {
+    if (!signedInEmail) return [];
+    return Object.entries(progressMap)
+      .sort(([, a], [, b]) => b.updatedAt - a.updatedAt)
+      .map(([showId]) => SHOW_CATALOG.find((s) => s.id === showId))
+      .filter((s): s is Show => Boolean(s));
+  }, [signedInEmail, progressMap]);
+
   const isFilteredOrTabView = activeNav !== 'Home' || hasActiveFilters;
 
   return (
@@ -178,7 +222,10 @@ export default function App() {
       <TopBar
         activeNav={activeNav}
         onSelectNav={handleSelectNav}
+        onOpenSignUp={openSignUpModal}
+        onOpenAccount={openAccountModal}
         onOpenPremium={() => setIsPremiumOpen(true)}
+        signedInEmail={signedInEmail}
         isPremiumMember={isPremiumMember}
         myListCount={myListIds.length}
       />
@@ -189,7 +236,9 @@ export default function App() {
             slides={heroSlides}
             myListIds={myListIds}
             signedInEmail={signedInEmail}
-            onSignInClick={() => setIsSignInOpen(true)}
+            onSignUpClick={openSignUpModal}
+            onAccountClick={openAccountModal}
+            onPlayLatestEpisode={handlePlayShow}
             onSelectShow={setSelectedShow}
             onToggleMyList={toggleMyList}
           />
@@ -260,6 +309,7 @@ export default function App() {
                 variant="poster"
                 defaultExpanded
                 myListIds={myListIds}
+                signedInEmail={signedInEmail}
                 progressMap={progressMap}
                 onSelectShow={setSelectedShow}
                 onPlayShow={handlePlayShow}
@@ -269,6 +319,22 @@ export default function App() {
           </section>
         ) : (
           <div className="pb-6">
+            {signedInEmail && continueWatchingShows.length > 0 && (
+              <ContentRail
+                id="continue-watching"
+                title="Continue Watching"
+                subtitle="Pick up right where you left off"
+                shows={continueWatchingShows}
+                variant="episode"
+                myListIds={myListIds}
+                signedInEmail={signedInEmail}
+                progressMap={progressMap}
+                onSelectShow={setSelectedShow}
+                onPlayShow={handlePlayShow}
+                onToggleMyList={toggleMyList}
+              />
+            )}
+
             <PremiumHighlights
               isPremiumMember={isPremiumMember}
               onOpenPremium={() => setIsPremiumOpen(true)}
@@ -281,6 +347,7 @@ export default function App() {
               shows={top10Shows}
               variant="top10"
               myListIds={myListIds}
+              signedInEmail={signedInEmail}
               progressMap={progressMap}
               onSelectShow={setSelectedShow}
               onPlayShow={handlePlayShow}
@@ -294,6 +361,7 @@ export default function App() {
               shows={freshReleases}
               variant="episode"
               myListIds={myListIds}
+              signedInEmail={signedInEmail}
               progressMap={progressMap}
               onSelectShow={setSelectedShow}
               onPlayShow={handlePlayShow}
@@ -307,6 +375,7 @@ export default function App() {
               shows={viuOriginals}
               variant="poster"
               myListIds={myListIds}
+              signedInEmail={signedInEmail}
               progressMap={progressMap}
               onSelectShow={setSelectedShow}
               onPlayShow={handlePlayShow}
@@ -320,6 +389,7 @@ export default function App() {
               shows={kVarietyShows}
               variant="poster"
               myListIds={myListIds}
+              signedInEmail={signedInEmail}
               progressMap={progressMap}
               onSelectShow={setSelectedShow}
               onPlayShow={handlePlayShow}
@@ -333,6 +403,7 @@ export default function App() {
               shows={regionalHits}
               variant="poster"
               myListIds={myListIds}
+              signedInEmail={signedInEmail}
               progressMap={progressMap}
               onSelectShow={setSelectedShow}
               onPlayShow={handlePlayShow}
@@ -343,7 +414,9 @@ export default function App() {
       </main>
 
       <Footer
+        signedInEmail={signedInEmail}
         onSelectNav={handleSelectNav}
+        onOpenSignUp={openSignUpModal}
         onOpenPremium={() => setIsPremiumOpen(true)}
       />
 
@@ -351,6 +424,7 @@ export default function App() {
         show={selectedShow}
         isSaved={selectedShow ? myListIds.includes(selectedShow.id) : false}
         isPremiumMember={isPremiumMember}
+        signedInEmail={signedInEmail}
         onClose={() => setSelectedShow(null)}
         onToggleMyList={toggleMyList}
         onPlayEpisode={handlePlayEpisode}
@@ -358,20 +432,35 @@ export default function App() {
           setSelectedShow(null);
           setIsPremiumOpen(true);
         }}
+        onOpenSignUp={() => {
+          setSelectedShow(null);
+          openSignUpModal();
+        }}
       />
 
       <VideoPlayerModal
         show={playerState?.show ?? null}
         episode={playerState?.episode ?? null}
+        initialTimeSeconds={playerState?.initialTimeSeconds ?? 14}
         isPremiumMember={isPremiumMember}
+        signedInEmail={signedInEmail}
         onClose={() => setPlayerState(null)}
         onSelectEpisode={(ep) =>
-          playerState && setPlayerState({ show: playerState.show, episode: ep })
+          playerState &&
+          setPlayerState({
+            show: playerState.show,
+            episode: ep,
+            initialTimeSeconds: getInitialTimeSeconds(playerState.show.id, ep),
+          })
         }
         onProgressUpdate={handleProgressUpdate}
         onOpenPremium={() => {
           setPlayerState(null);
           setIsPremiumOpen(true);
+        }}
+        onOpenSignUp={() => {
+          setPlayerState(null);
+          openSignUpModal();
         }}
       />
 
@@ -384,10 +473,39 @@ export default function App() {
 
       <SignInModal
         isOpen={isSignInOpen}
+        initialMode={authModalMode}
         signedInEmail={signedInEmail}
         onClose={() => setIsSignInOpen(false)}
-        onSignIn={(email) => setSignedInEmail(email)}
-        onSignOut={() => setSignedInEmail(null)}
+        onSignIn={(email) => {
+          setSignedInEmail(email);
+          setProgressMap((prev) =>
+            Object.keys(prev).length > 0
+              ? prev
+              : {
+                  'seoul-ward-24': {
+                    episodeNumber: 3,
+                    percent: 62,
+                    updatedAt: Date.now() - 1000,
+                  },
+                  'celadon-mist-chronicles': {
+                    episodeNumber: 4,
+                    percent: 38,
+                    updatedAt: Date.now() - 2000,
+                  },
+                  'running-man-sg-special': {
+                    episodeNumber: 2,
+                    percent: 45,
+                    updatedAt: Date.now() - 3000,
+                  },
+                }
+          );
+        }}
+        onSignOut={() => {
+          setSignedInEmail(null);
+          if (activeNav === 'My List') {
+            setActiveNav('Home');
+          }
+        }}
       />
     </div>
   );

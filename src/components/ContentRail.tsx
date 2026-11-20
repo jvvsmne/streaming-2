@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Bookmark, Check, ChevronLeft, ChevronRight, Play } from 'lucide-react';
+import { Bookmark, Check, ChevronLeft, ChevronRight, Lock, Play } from 'lucide-react';
 import { Show } from '../data/catalog';
 import { MediaImage } from './MediaImage';
 
@@ -13,6 +13,7 @@ interface ContentRailProps {
   variant?: RailVariant;
   defaultExpanded?: boolean;
   myListIds: string[];
+  signedInEmail?: string | null;
   progressMap?: Record<string, { episodeNumber: number; percent: number }>;
   onSelectShow: (show: Show) => void;
   onPlayShow: (show: Show, episodeNumber?: number) => void;
@@ -27,6 +28,7 @@ export function ContentRail({
   variant = 'poster',
   defaultExpanded = false,
   myListIds,
+  signedInEmail = null,
   progressMap = {},
   onSelectShow,
   onPlayShow,
@@ -106,12 +108,16 @@ export function ContentRail({
         }
       >
         {shows.map((show, idx) => {
-          const isSaved = myListIds.includes(show.id);
-          const progress = progressMap[show.id];
+          const isSaved = Boolean(signedInEmail && myListIds.includes(show.id));
+          const progress = signedInEmail ? progressMap[show.id] : undefined;
           const latestEp = show.episodes[show.episodes.length - 1];
           const rankNumber = show.topRank ?? idx + 1;
 
           if (variant === 'episode') {
+            const isLatestLocked = Boolean(latestEp?.requiresSignIn && !signedInEmail && !progress);
+            const resumedEp = progress
+              ? show.episodes.find((ep) => ep.number === progress.episodeNumber)
+              : undefined;
             return (
               <article
                 key={show.id}
@@ -131,7 +137,7 @@ export function ContentRail({
                     aria-label={`Play ${show.title}`}
                   >
                     <MediaImage
-                      src={latestEp?.thumbnail ?? show.backdropUrl}
+                      src={resumedEp?.thumbnail ?? latestEp?.thumbnail ?? show.backdropUrl}
                       alt={`${show.title} episode preview`}
                       fallbackTitle={show.title}
                       className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-[1.04]"
@@ -140,22 +146,31 @@ export function ContentRail({
                       aria-hidden="true"
                       className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/15 to-transparent"
                     />
-                    <span className="absolute bottom-2.5 left-3 text-xs font-semibold text-white">
+                    <span className="absolute bottom-2.5 left-3 text-xs font-semibold text-white tabular-nums">
                       {progress
-                        ? `Ep ${progress.episodeNumber} · Resume`
+                        ? `Ep ${progress.episodeNumber} · Resume (${progress.percent}%)`
                         : `Ep ${show.availableEpisodes} · ${latestEp?.duration ?? '60 min'}`}
                     </span>
-                    {show.isPremium && (
+                    {isLatestLocked ? (
+                      <span className="absolute top-2.5 right-2.5 inline-flex items-center gap-1 rounded bg-[#111113]/90 border border-[#FDBE11]/50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#FDBE11]">
+                        <Lock className="h-2.5 w-2.5" aria-hidden="true" />
+                        <span>Priority Lock</span>
+                      </span>
+                    ) : show.isPremium ? (
                       <span className="absolute top-2.5 right-2.5 rounded bg-[#FDBE11] px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#111113]">
                         Premium
                       </span>
-                    )}
+                    ) : null}
                     <span
                       aria-hidden="true"
                       className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-150 group-hover:opacity-100"
                     >
                       <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#FDBE11] text-[#111113] shadow-lg">
-                        <Play className="h-5 w-5 fill-current ml-0.5" />
+                        {isLatestLocked ? (
+                          <Lock className="h-4 w-4" />
+                        ) : (
+                          <Play className="h-5 w-5 fill-current ml-0.5" />
+                        )}
                       </span>
                     </span>
                   </button>
@@ -184,20 +199,22 @@ export function ContentRail({
                     </p>
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => onToggleMyList(show.id)}
-                    aria-label={
-                      isSaved ? `Remove ${show.title} from My List` : `Add ${show.title} to My List`
-                    }
-                    className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded text-[#A1A1AA] hover:bg-white/10 hover:text-white cursor-pointer"
-                  >
-                    {isSaved ? (
-                      <Check className="h-4 w-4 text-[#FDBE11]" aria-hidden="true" />
-                    ) : (
-                      <Bookmark className="h-4 w-4" aria-hidden="true" />
-                    )}
-                  </button>
+                  {signedInEmail && (
+                    <button
+                      type="button"
+                      onClick={() => onToggleMyList(show.id)}
+                      aria-label={
+                        isSaved ? `Remove ${show.title} from My List` : `Add ${show.title} to My List`
+                      }
+                      className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded text-[#A1A1AA] hover:bg-white/10 hover:text-white cursor-pointer"
+                    >
+                      {isSaved ? (
+                        <Check className="h-4 w-4 text-[#FDBE11]" aria-hidden="true" />
+                      ) : (
+                        <Bookmark className="h-4 w-4" aria-hidden="true" />
+                      )}
+                    </button>
+                  )}
                 </div>
               </article>
             );
@@ -277,20 +294,22 @@ export function ContentRail({
                     >
                       <Play className="h-3.5 w-3.5 fill-current ml-0.5" aria-hidden="true" />
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => onToggleMyList(show.id)}
-                      aria-label={
-                        isSaved ? `Remove ${show.title} from My List` : `Save ${show.title} to My List`
-                      }
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-[#111113]/85 text-white border border-white/15 hover:bg-[#232329] cursor-pointer"
-                    >
-                      {isSaved ? (
-                        <Check className="h-3.5 w-3.5 text-[#FDBE11]" aria-hidden="true" />
-                      ) : (
-                        <Bookmark className="h-3.5 w-3.5" aria-hidden="true" />
-                      )}
-                    </button>
+                    {signedInEmail && (
+                      <button
+                        type="button"
+                        onClick={() => onToggleMyList(show.id)}
+                        aria-label={
+                          isSaved ? `Remove ${show.title} from My List` : `Save ${show.title} to My List`
+                        }
+                        className="flex h-8 w-8 items-center justify-center rounded-full bg-[#111113]/85 text-white border border-white/15 hover:bg-[#232329] cursor-pointer"
+                      >
+                        {isSaved ? (
+                          <Check className="h-3.5 w-3.5 text-[#FDBE11]" aria-hidden="true" />
+                        ) : (
+                          <Bookmark className="h-3.5 w-3.5" aria-hidden="true" />
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

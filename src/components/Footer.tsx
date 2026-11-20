@@ -1,11 +1,18 @@
 import { NavTab } from './TopBar';
 
 interface FooterProps {
+  signedInEmail: string | null;
   onSelectNav: (tab: NavTab) => void;
+  onOpenSignUp: () => void;
   onOpenPremium: () => void;
 }
 
-export function Footer({ onSelectNav, onOpenPremium }: FooterProps) {
+export function Footer({
+  signedInEmail,
+  onSelectNav,
+  onOpenSignUp,
+  onOpenPremium,
+}: FooterProps) {
   return (
     <footer className="mt-12 border-t border-white/[0.08] bg-[#0B0B0D]">
       <div className="mx-auto max-w-[1440px] px-4 py-12 sm:px-8">
@@ -52,15 +59,17 @@ export function Footer({ onSelectNav, onOpenPremium }: FooterProps) {
                   Chinese Dramas
                 </button>
               </li>
-              <li>
-                <button
-                  type="button"
-                  onClick={() => onSelectNav('My List')}
-                  className="hover:text-[#FDBE11] transition-colors cursor-pointer"
-                >
-                  My Watchlist
-                </button>
-              </li>
+              {signedInEmail && (
+                <li>
+                  <button
+                    type="button"
+                    onClick={() => onSelectNav('My List')}
+                    className="hover:text-[#FDBE11] transition-colors cursor-pointer"
+                  >
+                    My Watchlist
+                  </button>
+                </li>
+              )}
             </ul>
           </div>
 
@@ -69,6 +78,17 @@ export function Footer({ onSelectNav, onOpenPremium }: FooterProps) {
               Membership
             </h3>
             <ul className="mt-3 space-y-2 text-sm text-[#A1A1AA]">
+              {!signedInEmail && (
+                <li>
+                  <button
+                    type="button"
+                    onClick={onOpenSignUp}
+                    className="text-[#FDBE11] font-medium hover:text-[#FFD043] transition-colors cursor-pointer"
+                  >
+                    Sign Up Free · Priority Access
+                  </button>
+                </li>
+              )}
               <li>
                 <button
                   type="button"

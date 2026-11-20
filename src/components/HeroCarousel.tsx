@@ -1,5 +1,14 @@
 import { useEffect, useState } from 'react';
-import { Bookmark, Check, ChevronLeft, ChevronRight, Info, LogIn } from 'lucide-react';
+import {
+  Bookmark,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  Info,
+  Lock,
+  Play,
+  Sparkles,
+} from 'lucide-react';
 import { Show } from '../data/catalog';
 import { MediaImage } from './MediaImage';
 
@@ -7,7 +16,9 @@ interface HeroCarouselProps {
   slides: Show[];
   myListIds: string[];
   signedInEmail: string | null;
-  onSignInClick: () => void;
+  onSignUpClick: () => void;
+  onAccountClick: () => void;
+  onPlayLatestEpisode: (show: Show, episodeNumber: number) => void;
   onSelectShow: (show: Show) => void;
   onToggleMyList: (showId: string) => void;
 }
@@ -16,7 +27,9 @@ export function HeroCarousel({
   slides,
   myListIds,
   signedInEmail,
-  onSignInClick,
+  onSignUpClick,
+  onAccountClick,
+  onPlayLatestEpisode,
   onSelectShow,
   onToggleMyList,
 }: HeroCarouselProps) {
@@ -34,6 +47,9 @@ export function HeroCarousel({
   if (!current) return null;
 
   const isSaved = myListIds.includes(current.id);
+  const latestEp = current.episodes[current.episodes.length - 1];
+  const latestEpNum = latestEp?.number ?? current.availableEpisodes;
+  const isLatestLocked = Boolean(latestEp?.requiresSignIn && !signedInEmail);
 
   const goPrev = () => {
     setActiveIndex((prev) => (prev - 1 + slides.length) % slides.length);
@@ -45,10 +61,10 @@ export function HeroCarousel({
 
   return (
     <section
-      aria-label="Featured premieres"
+      aria-label="Featured currently airing premieres"
       className="relative w-full overflow-hidden bg-[#111113]"
     >
-      <div className="relative h-[440px] sm:h-[520px] lg:h-[580px] w-full">
+      <div className="relative min-h-[480px] sm:min-h-[540px] lg:min-h-[590px] w-full flex">
         {/* Background Key Art with smooth crossfade */}
         {slides.map((slide, index) => (
           <div
@@ -70,20 +86,35 @@ export function HeroCarousel({
         {/* Measured multi-stop scrim for guaranteed WCAG AA legibility */}
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-r from-[#111113] via-[#111113]/75 to-transparent"
+          className="absolute inset-0 bg-gradient-to-r from-[#111113] via-[#111113]/80 to-transparent"
         />
         <div
           aria-hidden="true"
-          className="absolute inset-0 bg-gradient-to-t from-[#111113] via-transparent to-[#111113]/30"
+          className="absolute inset-0 bg-gradient-to-t from-[#111113] via-transparent to-[#111113]/35"
         />
 
         {/* Editorial Hero Content Overlay */}
-        <div className="relative z-10 mx-auto flex h-full max-w-[1440px] flex-col justify-end px-4 pb-12 sm:px-8 sm:pb-14">
+        <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col justify-end px-4 pt-16 pb-12 sm:px-8 sm:pb-14">
           <div className="max-w-2xl">
-            <p className="mb-2 text-xs sm:text-sm font-semibold tracking-wide text-[#FDBE11]">
-              {current.isOriginal ? 'Viu Original' : current.category}
-              {current.simulcastNote ? ` · ${current.simulcastNote}` : ''}
-            </p>
+            <div className="mb-2.5 flex flex-wrap items-center gap-2 text-xs sm:text-sm font-semibold tracking-wide text-[#FDBE11]">
+              <span className="inline-flex items-center gap-1.5">
+                <span
+                  aria-hidden="true"
+                  className="h-2 w-2 rounded-full bg-[#FDBE11] shadow-[0_0_8px_#FDBE11]"
+                />
+                <span>Currently Airing</span>
+              </span>
+              <span aria-hidden="true" className="text-white/30">·</span>
+              <span>{current.isOriginal ? 'Viu Original' : current.category}</span>
+              {current.simulcastNote && (
+                <>
+                  <span aria-hidden="true" className="text-white/30">·</span>
+                  <span className="text-[#E4E4E7] font-medium">
+                    {current.simulcastNote.replace(/^Currently Airing\s*·\s*/i, '')}
+                  </span>
+                </>
+              )}
+            </div>
 
             <h1 className="font-display text-3xl sm:text-5xl lg:text-[54px] font-bold tracking-tight text-white leading-[1.08] [text-wrap:balance]">
               {current.title}
@@ -92,7 +123,9 @@ export function HeroCarousel({
             <div className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs sm:text-sm text-[#D4D4D8] tabular-nums">
               <span>{current.year}</span>
               <span aria-hidden="true">·</span>
-              <span>{current.availableEpisodes} of {current.totalEpisodes} Episodes</span>
+              <span>
+                {current.availableEpisodes} of {current.totalEpisodes} Episodes
+              </span>
               <span aria-hidden="true">·</span>
               <span>{current.genres.join(', ')}</span>
               <span aria-hidden="true">·</span>
@@ -103,33 +136,74 @@ export function HeroCarousel({
               {current.synopsis}
             </p>
 
-            <div className="mt-6 flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                onClick={onSignInClick}
-                className="animate-viu-flash inline-flex items-center gap-2 rounded-md bg-[#FDBE11] px-6 py-3 text-sm sm:text-base font-extrabold tracking-wide text-[#111113] transition-colors duration-150 hover:bg-[#FFD043] whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FDBE11]"
-              >
-                <LogIn className="h-4 w-4 stroke-[2.5]" aria-hidden="true" />
-                <span>{signedInEmail ? 'Signed In' : 'Sign In to Watch'}</span>
-              </button>
+            {/* Latest Episode Lock / Priority Access Status */}
+            <div className="mt-4">
+              {!signedInEmail ? (
+                <div className="inline-flex items-center gap-2 rounded-md border border-[#FDBE11]/40 bg-[#1A1A1E]/90 px-3 py-1.5 text-xs sm:text-sm text-[#F5F5F7]">
+                  <Lock className="h-3.5 w-3.5 shrink-0 text-[#FDBE11]" aria-hidden="true" />
+                  <span>
+                    <strong className="text-white">Not signed in</strong> · Latest Episode (
+                    <strong className="text-[#FDBE11]">Ep {latestEpNum}</strong>) is locked —{' '}
+                    <span className="font-semibold text-[#FDBE11]">Priority Access</span> for members
+                  </span>
+                </div>
+              ) : (
+                <div className="inline-flex flex-wrap items-center gap-2 rounded-md border border-emerald-400/35 bg-[#1A1A1E]/90 px-3 py-1.5 text-xs sm:text-sm text-[#F5F5F7]">
+                  <Check className="h-3.5 w-3.5 shrink-0 text-emerald-400" aria-hidden="true" />
+                  <span>
+                    <strong className="text-emerald-400">Priority Access Unlocked</strong> · Ep {latestEpNum} ready to stream
+                  </span>
+                  <button
+                    type="button"
+                    onClick={onAccountClick}
+                    className="ml-1 text-xs font-semibold text-[#D4D4D8] underline underline-offset-2 hover:text-white cursor-pointer"
+                  >
+                    Account
+                  </button>
+                </div>
+              )}
+            </div>
 
-              <button
-                type="button"
-                onClick={() => onToggleMyList(current.id)}
-                className="inline-flex items-center gap-2 rounded-md border border-white/25 bg-[#1A1A1E]/80 px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-150 hover:bg-[#232329] whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FDBE11]"
-              >
-                {isSaved ? (
-                  <Check className="h-4 w-4 text-[#FDBE11]" aria-hidden="true" />
-                ) : (
-                  <Bookmark className="h-4 w-4" aria-hidden="true" />
-                )}
-                <span>{isSaved ? 'In My List' : 'My List'}</span>
-              </button>
+            <div className="mt-4 flex flex-wrap items-center gap-3">
+              {isLatestLocked ? (
+                <button
+                  type="button"
+                  onClick={onSignUpClick}
+                  className="animate-viu-flash inline-flex items-center gap-2 rounded-md bg-[#FDBE11] px-5 py-3 text-sm sm:text-base font-extrabold tracking-wide text-[#111113] transition-colors duration-150 hover:bg-[#FFD043] shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FDBE11]"
+                >
+                  <Sparkles className="h-4 w-4 stroke-[2.5] shrink-0" aria-hidden="true" />
+                  <span>Sign Up for Priority Access · Unlock Ep {latestEpNum}</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => onPlayLatestEpisode(current, latestEpNum)}
+                  className="inline-flex items-center gap-2 rounded-md bg-[#FDBE11] px-5 py-3 text-sm sm:text-base font-extrabold tracking-wide text-[#111113] transition-colors duration-150 hover:bg-[#FFD043] shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FDBE11]"
+                >
+                  <Play className="h-4 w-4 fill-current shrink-0" aria-hidden="true" />
+                  <span>Watch Ep {latestEpNum} · Priority Access</span>
+                </button>
+              )}
+
+              {signedInEmail && (
+                <button
+                  type="button"
+                  onClick={() => onToggleMyList(current.id)}
+                  className="inline-flex items-center gap-2 rounded-md border border-white/25 bg-[#1A1A1E]/80 px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-150 hover:bg-[#232329] whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FDBE11]"
+                >
+                  {isSaved ? (
+                    <Check className="h-4 w-4 text-[#FDBE11]" aria-hidden="true" />
+                  ) : (
+                    <Bookmark className="h-4 w-4" aria-hidden="true" />
+                  )}
+                  <span>{isSaved ? 'In My List' : 'My List'}</span>
+                </button>
+              )}
 
               <button
                 type="button"
                 onClick={() => onSelectShow(current)}
-                className="inline-flex items-center gap-1.5 rounded-md px-3.5 py-2.5 text-sm font-medium text-[#D4D4D8] transition-colors duration-150 hover:text-white hover:bg-white/10 whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FDBE11]"
+                className="inline-flex items-center gap-1.5 rounded-md border border-white/20 bg-[#1A1A1E]/75 px-4 py-2.5 text-sm font-medium text-[#E4E4E7] transition-colors duration-150 hover:text-white hover:bg-[#232329] whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FDBE11]"
               >
                 <Info className="h-4 w-4" aria-hidden="true" />
                 <span>Details</span>

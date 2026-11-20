@@ -17,11 +17,14 @@ import { MediaImage } from './MediaImage';
 interface VideoPlayerModalProps {
   show: Show | null;
   episode: Episode | null;
+  initialTimeSeconds?: number;
   isPremiumMember: boolean;
+  signedInEmail: string | null;
   onClose: () => void;
   onSelectEpisode: (episode: Episode) => void;
   onProgressUpdate: (showId: string, episodeNumber: number, percent: number) => void;
   onOpenPremium: () => void;
+  onOpenSignUp: () => void;
 }
 
 type QualityOption = '1080p Full HD' | '720p HD' | '480p SD';
@@ -35,11 +38,14 @@ function formatTime(seconds: number): string {
 export function VideoPlayerModal({
   show,
   episode,
+  initialTimeSeconds = 14,
   isPremiumMember,
+  signedInEmail,
   onClose,
   onSelectEpisode,
   onProgressUpdate,
   onOpenPremium,
+  onOpenSignUp,
 }: VideoPlayerModalProps) {
   const [isPlaying, setIsPlaying] = useState(true);
   const [isMuted, setIsMuted] = useState(false);
@@ -49,14 +55,14 @@ export function VideoPlayerModal({
 
   useEffect(() => {
     if (!show || !episode) return;
-    setCurrentTime(14);
+    setCurrentTime(Math.min(episode.durationSeconds, Math.max(0, initialTimeSeconds)));
     setIsPlaying(true);
     if (!show.subtitles.includes('English')) {
       setSubtitleLang(show.subtitles[0] ?? 'Off');
     } else {
       setSubtitleLang('English');
     }
-  }, [show?.id, episode?.number]);
+  }, [show?.id, episode?.number, initialTimeSeconds]);
 
   useEffect(() => {
     if (!show || !episode) return;
@@ -81,7 +87,7 @@ export function VideoPlayerModal({
 
   useEffect(() => {
     if (!show || !episode) return;
-    const pct = Math.round((currentTime / episode.durationSeconds) * 100);
+    const pct = Math.max(1, Math.round((currentTime / episode.durationSeconds) * 100));
     onProgressUpdate(show.id, episode.number, pct);
   }, [currentTime, show, episode, onProgressUpdate]);
 
@@ -89,7 +95,9 @@ export function VideoPlayerModal({
 
   const progressPct = Math.min(100, (currentTime / episode.durationSeconds) * 100);
   const nextEpisode = show.episodes.find((ep) => ep.number === episode.number + 1);
-  const nextLocked = nextEpisode ? nextEpisode.isPremiumOnly && !isPremiumMember : false;
+  const nextSignInLocked = Boolean(nextEpisode?.requiresSignIn && !signedInEmail);
+  const nextPremiumLocked = nextEpisode ? nextEpisode.isPremiumOnly && !isPremiumMember : false;
+  const nextLocked = nextSignInLocked || nextPremiumLocked;
 
   const subtitleLines =
     subtitleLang === 'Off'
@@ -286,12 +294,20 @@ export function VideoPlayerModal({
                   <button
                     type="button"
                     onClick={() =>
-                      nextLocked ? onOpenPremium() : onSelectEpisode(nextEpisode)
+                      nextSignInLocked
+                        ? onOpenSignUp()
+                        : nextPremiumLocked
+                          ? onOpenPremium()
+                          : onSelectEpisode(nextEpisode)
                     }
                     className="inline-flex items-center gap-1 rounded-md border border-[#FDBE11]/40 bg-[#1A1A1E] px-3 py-1.5 text-xs font-semibold text-[#FDBE11] hover:bg-[#232329] whitespace-nowrap cursor-pointer"
                   >
                     {nextLocked && <Lock className="h-3 w-3" aria-hidden="true" />}
-                    <span>Next: Ep {nextEpisode.number}</span>
+                    <span>
+                      {nextSignInLocked
+                        ? `Sign Up · Ep ${nextEpisode.number}`
+                        : `Next: Ep ${nextEpisode.number}`}
+                    </span>
                     <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
                   </button>
                 )}
@@ -308,12 +324,20 @@ export function VideoPlayerModal({
           <div className="space-y-2">
             {show.episodes.map((ep) => {
               const isCurrent = ep.number === episode.number;
-              const locked = ep.isPremiumOnly && !isPremiumMember;
+              const signInLocked = Boolean(ep.requiresSignIn && !signedInEmail);
+              const premiumLocked = ep.isPremiumOnly && !isPremiumMember;
+              const locked = signInLocked || premiumLocked;
               return (
                 <button
                   key={ep.number}
                   type="button"
-                  onClick={() => (locked ? onOpenPremium() : onSelectEpisode(ep))}
+                  onClick={() =>
+                    signInLocked
+                      ? onOpenSignUp()
+                      : premiumLocked
+                        ? onOpenPremium()
+                        : onSelectEpisode(ep)
+                  }
                   className={`flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors cursor-pointer ${
                     isCurrent
                       ? 'bg-[#232329] border border-[#FDBE11]/50'
