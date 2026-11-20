@@ -79,11 +79,6 @@ export function TopBar({
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           {!signedInEmail ? (
             <>
-              <span className="hidden lg:inline-flex items-center gap-1.5 text-xs font-medium text-[#A1A1AA] whitespace-nowrap mr-1">
-                <User className="h-3.5 w-3.5 text-[#71717A]" aria-hidden="true" />
-                <span>Not signed in</span>
-              </span>
-
               <button
                 type="button"
                 onClick={onOpenSignUp}
@@ -130,32 +125,25 @@ export function TopBar({
       {/* Mobile horizontal nav row (compact, single-line scrolling) */}
       <nav
         aria-label="Mobile categories"
-        className="flex md:hidden items-center justify-between gap-4 overflow-x-auto no-scrollbar border-t border-white/[0.06] px-4 py-2 text-xs font-medium"
+        className="flex md:hidden items-center gap-5 overflow-x-auto no-scrollbar border-t border-white/[0.06] px-4 py-2 text-xs font-medium"
       >
-        <div className="flex items-center gap-5">
-          {navItems.map((item) => {
-            const isActive = activeNav === item;
-            const label =
-              item === 'My List' && myListCount > 0 ? `My List (${myListCount})` : item;
-            return (
-              <button
-                key={item}
-                type="button"
-                onClick={() => onSelectNav(item)}
-                className={`py-1 whitespace-nowrap shrink-0 transition-colors cursor-pointer ${
-                  isActive ? 'text-[#FDBE11] font-semibold' : 'text-[#A1A1AA]'
-                }`}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
-        {!signedInEmail && (
-          <span className="text-[11px] text-[#71717A] whitespace-nowrap shrink-0">
-            Not signed in
-          </span>
-        )}
+        {navItems.map((item) => {
+          const isActive = activeNav === item;
+          const label =
+            item === 'My List' && myListCount > 0 ? `My List (${myListCount})` : item;
+          return (
+            <button
+              key={item}
+              type="button"
+              onClick={() => onSelectNav(item)}
+              className={`py-1 whitespace-nowrap shrink-0 transition-colors cursor-pointer ${
+                isActive ? 'text-[#FDBE11] font-semibold' : 'text-[#A1A1AA]'
+              }`}
+            >
+              {label}
+            </button>
+          );
+        })}
       </nav>
     </header>
   );
