@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Check, LogIn, Sparkles, X } from 'lucide-react';
+import { UWatchLogo } from './UWatchLogo';
 
 interface SignInModalProps {
   isOpen: boolean;
@@ -81,9 +82,7 @@ export function SignInModal({
           <X className="h-4 w-4" aria-hidden="true" />
         </button>
 
-        <span className="font-display text-2xl font-extrabold tracking-tight text-[#FDBE11]">
-          viu
-        </span>
+        <UWatchLogo size="md" />
 
         {signedInEmail ? (
           <div className="mt-4">
@@ -117,7 +116,7 @@ export function SignInModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-md bg-[#FDBE11] px-5 py-2 text-sm font-bold text-[#111113] hover:bg-[#FFD043] cursor-pointer"
+                className="rounded-md bg-[#FF6B00] px-5 py-2 text-sm font-bold text-[#111113] hover:bg-[#FF8533] cursor-pointer"
               >
                 Continue Watching
               </button>
@@ -125,7 +124,7 @@ export function SignInModal({
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="mt-3">
-            <div className="inline-flex items-center gap-1.5 rounded bg-[#FDBE11]/15 px-2.5 py-1 text-xs font-semibold text-[#FDBE11]">
+            <div className="inline-flex items-center gap-1.5 rounded bg-[#FF6B00]/15 px-2.5 py-1 text-xs font-semibold text-[#FF6B00]">
               <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
               <span>Priority Access · Free Member Unlock</span>
             </div>
@@ -134,58 +133,58 @@ export function SignInModal({
               id="signin-modal-title"
               className="mt-3 font-display text-2xl font-bold text-white"
             >
-              {isSignUp ? 'Sign up to unlock the latest episode' : 'Sign in to Viu Singapore'}
+              {isSignUp ? 'Sign up to unlock the latest episode' : 'Sign in to UWatch Singapore'}
             </h2>
             <p className="mt-1.5 text-sm text-[#A1A1AA]">
               {isSignUp
                 ? 'Get instant Priority Access to newly aired episodes as soon as they drop, plus sync your watchlist across devices.'
-                : 'Sign in with your Viu account to unlock latest airing episodes with Priority Access.'}
+                : 'Sign in with your UWatch account to unlock latest airing episodes with Priority Access.'}
             </p>
 
             <div className="mt-5 space-y-4">
               <div>
                 <label
-                  htmlFor="viu-signin-email"
+                  htmlFor="uwatch-signin-email"
                   className="block text-xs font-semibold text-[#D4D4D8] mb-1.5"
                 >
                   Email address
                 </label>
                 <input
-                  id="viu-signin-email"
+                  id="uwatch-signin-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
                   autoFocus
-                  className="w-full rounded-md border border-white/10 bg-[#111113] px-3.5 py-2.5 text-sm text-white placeholder-[#71717A] focus:border-[#FDBE11] focus:outline-none"
+                  className="w-full rounded-md border border-white/10 bg-[#111113] px-3.5 py-2.5 text-sm text-white placeholder-[#71717A] focus:border-[#FF6B00] focus:outline-none"
                 />
               </div>
 
               <div>
                 <label
-                  htmlFor="viu-signin-password"
+                  htmlFor="uwatch-signin-password"
                   className="block text-xs font-semibold text-[#D4D4D8] mb-1.5"
                 >
                   {isSignUp ? 'Create password' : 'Password'}
                 </label>
                 <input
-                  id="viu-signin-password"
+                  id="uwatch-signin-password"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder={isSignUp ? 'At least 4 characters' : 'Enter your password'}
-                  className="w-full rounded-md border border-white/10 bg-[#111113] px-3.5 py-2.5 text-sm text-white placeholder-[#71717A] focus:border-[#FDBE11] focus:outline-none"
+                  className="w-full rounded-md border border-white/10 bg-[#111113] px-3.5 py-2.5 text-sm text-white placeholder-[#71717A] focus:border-[#FF6B00] focus:outline-none"
                 />
               </div>
             </div>
 
             {error && (
-              <p className="mt-3 text-xs font-medium text-[#FDBE11]">{error}</p>
+              <p className="mt-3 text-xs font-medium text-[#FF6B00]">{error}</p>
             )}
 
             <button
               type="submit"
-              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#FDBE11] px-5 py-2.5 text-sm font-extrabold text-[#111113] hover:bg-[#FFD043] transition-colors cursor-pointer"
+              className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#FF6B00] px-5 py-2.5 text-sm font-extrabold text-[#111113] hover:bg-[#FF8533] transition-colors cursor-pointer"
             >
               {isSignUp ? (
                 <Sparkles className="h-4 w-4" aria-hidden="true" />
@@ -200,14 +199,14 @@ export function SignInModal({
             </button>
 
             <p className="mt-4 text-center text-xs text-[#A1A1AA]">
-              {isSignUp ? 'Already have a Viu account?' : 'New to Viu Singapore?'}{' '}
+              {isSignUp ? 'Already have a UWatch account?' : 'New to UWatch Singapore?'}{' '}
               <button
                 type="button"
                 onClick={() => {
                   setMode(isSignUp ? 'signin' : 'signup');
                   setError(null);
                 }}
-                className="font-semibold text-[#FDBE11] hover:text-[#FFD043] cursor-pointer"
+                className="font-semibold text-[#FF6B00] hover:text-[#FF8533] cursor-pointer"
               >
                 {isSignUp ? 'Sign In' : 'Sign Up Free'}
               </button>

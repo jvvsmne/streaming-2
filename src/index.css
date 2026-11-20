@@ -3,11 +3,11 @@
 @theme {
   --font-display: "Outfit", system-ui, sans-serif;
   --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
-  --color-viu-gold: #FDBE11;
-  --color-viu-gold-hover: #FFD043;
-  --color-viu-canvas: #111113;
-  --color-viu-surface: #1A1A1E;
-  --color-viu-elevated: #232329;
+  --color-uwatch-orange: #FF6B00;
+  --color-uwatch-orange-hover: #FF8533;
+  --color-uwatch-canvas: #111113;
+  --color-uwatch-surface: #1A1A1E;
+  --color-uwatch-elevated: #232329;
 }
 
 @layer base {
@@ -32,21 +32,21 @@
   scrollbar-width: none;
 }
 
-@keyframes viu-flash {
+@keyframes uwatch-flash {
   0%, 100% {
     opacity: 1;
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(253, 190, 17, 0.7);
+    box-shadow: 0 0 0 0 rgba(255, 107, 0, 0.7);
   }
   50% {
-    opacity: 0.55;
+    opacity: 0.65;
     transform: scale(1.03);
-    box-shadow: 0 0 22px 4px rgba(253, 190, 17, 0.85);
+    box-shadow: 0 0 22px 4px rgba(255, 107, 0, 0.85);
   }
 }
 
-.animate-viu-flash {
-  animation: viu-flash 0.9s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+.animate-uwatch-flash {
+  animation: uwatch-flash 0.9s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

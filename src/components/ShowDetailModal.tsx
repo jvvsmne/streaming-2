@@ -74,8 +74,8 @@ export function ShowDetailModal({
           />
 
           <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">
-            <p className="text-xs font-semibold text-[#FDBE11]">
-              {show.isOriginal ? 'Viu Original' : show.category}
+            <p className="text-xs font-semibold text-[#FF6B00]">
+              {show.isOriginal ? 'UWatch Original' : show.category}
               {show.simulcastNote ? ` · ${show.simulcastNote}` : ''}
             </p>
             <h2
@@ -110,7 +110,7 @@ export function ShowDetailModal({
                 <button
                   type="button"
                   onClick={() => onPlayEpisode(show, firstPlayable)}
-                  className="inline-flex items-center gap-2 rounded-md bg-[#FDBE11] px-4 py-2 text-sm font-bold text-[#111113] hover:bg-[#FFD043] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
+                  className="inline-flex items-center gap-2 rounded-md bg-[#FF6B00] px-4 py-2 text-sm font-bold text-[#111113] hover:bg-[#FF8533] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   <Play className="h-4 w-4 fill-current" aria-hidden="true" />
                   <span>Watch Ep 1</span>
@@ -124,7 +124,7 @@ export function ShowDetailModal({
                   className="inline-flex items-center gap-2 rounded-md border border-white/15 bg-[#232329] px-4 py-2 text-sm font-semibold text-white hover:bg-[#2C2C34] transition-colors whitespace-nowrap shrink-0 cursor-pointer"
                 >
                   {isSaved ? (
-                    <Check className="h-4 w-4 text-[#FDBE11]" aria-hidden="true" />
+                    <Check className="h-4 w-4 text-[#FF6B00]" aria-hidden="true" />
                   ) : (
                     <Bookmark className="h-4 w-4" aria-hidden="true" />
                   )}
@@ -162,7 +162,7 @@ export function ShowDetailModal({
                   <button
                     type="button"
                     onClick={onOpenSignUp}
-                    className="text-xs font-semibold text-[#FDBE11] hover:text-[#FFD043] cursor-pointer"
+                    className="text-xs font-semibold text-[#FF6B00] hover:text-[#FF8533] cursor-pointer"
                   >
                     Sign up for Priority Access to latest ep
                   </button>
@@ -171,9 +171,9 @@ export function ShowDetailModal({
                   <button
                     type="button"
                     onClick={onOpenPremium}
-                    className="text-xs font-semibold text-[#A1A1AA] hover:text-[#FDBE11] cursor-pointer"
+                    className="text-xs font-semibold text-[#A1A1AA] hover:text-[#FF6B00] cursor-pointer"
                   >
-                    Unlock all with Viu Premium
+                    Unlock all with UWatch Premium
                   </button>
                 )}
               </div>
@@ -212,24 +212,24 @@ export function ShowDetailModal({
                         }`}
                       >
                         {locked ? (
-                          <Lock className="h-4 w-4 text-[#FDBE11]" aria-hidden="true" />
+                          <Lock className="h-4 w-4 text-[#FF6B00]" aria-hidden="true" />
                         ) : (
-                          <Play className="h-4 w-4 fill-current text-[#FDBE11]" aria-hidden="true" />
+                          <Play className="h-4 w-4 fill-current text-[#FF6B00]" aria-hidden="true" />
                         )}
                       </div>
                     </div>
 
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-sm font-semibold text-white group-hover:text-[#FDBE11] truncate">
+                        <span className="text-sm font-semibold text-white group-hover:text-[#FF6B00] truncate">
                           Ep {ep.number} · {ep.title}
                         </span>
                         {signInLocked ? (
-                          <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#FDBE11]">
+                          <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#FF6B00]">
                             Priority Lock
                           </span>
                         ) : premiumLocked ? (
-                          <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#FDBE11]">
+                          <span className="shrink-0 text-[10px] font-bold uppercase tracking-wider text-[#FF6B00]">
                             Premium
                           </span>
                         ) : null}

@@ -96,16 +96,16 @@ export function HeroCarousel({
         {/* Editorial Hero Content Overlay */}
         <div className="relative z-10 mx-auto flex w-full max-w-[1440px] flex-col justify-end px-4 pt-16 pb-12 sm:px-8 sm:pb-14">
           <div className="max-w-2xl">
-            <div className="mb-2.5 flex flex-wrap items-center gap-2 text-xs sm:text-sm font-semibold tracking-wide text-[#FDBE11]">
+            <div className="mb-2.5 flex flex-wrap items-center gap-2 text-xs sm:text-sm font-semibold tracking-wide text-[#FF6B00]">
               <span className="inline-flex items-center gap-1.5">
                 <span
                   aria-hidden="true"
-                  className="h-2 w-2 rounded-full bg-[#FDBE11] shadow-[0_0_8px_#FDBE11]"
+                  className="h-2 w-2 rounded-full bg-[#FF6B00] shadow-[0_0_8px_#FF6B00]"
                 />
                 <span>Currently Airing</span>
               </span>
               <span aria-hidden="true" className="text-white/30">·</span>
-              <span>{current.isOriginal ? 'Viu Original' : current.category}</span>
+              <span>{current.isOriginal ? 'UWatch Original' : current.category}</span>
               {current.simulcastNote && (
                 <>
                   <span aria-hidden="true" className="text-white/30">·</span>
@@ -139,12 +139,12 @@ export function HeroCarousel({
             {/* Latest Episode Lock / Priority Access Status */}
             <div className="mt-4">
               {!signedInEmail ? (
-                <div className="inline-flex items-center gap-2 rounded-md border border-[#FDBE11]/40 bg-[#1A1A1E]/90 px-3 py-1.5 text-xs sm:text-sm text-[#F5F5F7]">
-                  <Lock className="h-3.5 w-3.5 shrink-0 text-[#FDBE11]" aria-hidden="true" />
+                <div className="inline-flex items-center gap-2 rounded-md border border-[#FF6B00]/40 bg-[#1A1A1E]/90 px-3 py-1.5 text-xs sm:text-sm text-[#F5F5F7]">
+                  <Lock className="h-3.5 w-3.5 shrink-0 text-[#FF6B00]" aria-hidden="true" />
                   <span>
                     <strong className="text-white">Not signed in</strong> · Latest Episode (
-                    <strong className="text-[#FDBE11]">Ep {latestEpNum}</strong>) is locked —{' '}
-                    <span className="font-semibold text-[#FDBE11]">Priority Access</span> for members
+                    <strong className="text-[#FF6B00]">Ep {latestEpNum}</strong>) is locked —{' '}
+                    <span className="font-semibold text-[#FF6B00]">Priority Access</span> for members
                   </span>
                 </div>
               ) : (
@@ -169,7 +169,7 @@ export function HeroCarousel({
                 <button
                   type="button"
                   onClick={onSignUpClick}
-                  className="animate-viu-flash inline-flex items-center gap-2 rounded-md bg-[#FDBE11] px-5 py-3 text-sm sm:text-base font-extrabold tracking-wide text-[#111113] transition-colors duration-150 hover:bg-[#FFD043] shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FDBE11]"
+                  className="animate-uwatch-flash inline-flex items-center gap-2 rounded-md bg-[#FF6B00] px-5 py-3 text-sm sm:text-base font-extrabold tracking-wide text-[#111113] transition-colors duration-150 hover:bg-[#FF8533] shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF6B00]"
                 >
                   <Sparkles className="h-4 w-4 stroke-[2.5] shrink-0" aria-hidden="true" />
                   <span>Sign Up for Priority Access · Unlock Ep {latestEpNum}</span>
@@ -178,7 +178,7 @@ export function HeroCarousel({
                 <button
                   type="button"
                   onClick={() => onPlayLatestEpisode(current, latestEpNum)}
-                  className="inline-flex items-center gap-2 rounded-md bg-[#FDBE11] px-5 py-3 text-sm sm:text-base font-extrabold tracking-wide text-[#111113] transition-colors duration-150 hover:bg-[#FFD043] shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FDBE11]"
+                  className="inline-flex items-center gap-2 rounded-md bg-[#FF6B00] px-5 py-3 text-sm sm:text-base font-extrabold tracking-wide text-[#111113] transition-colors duration-150 hover:bg-[#FF8533] shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF6B00]"
                 >
                   <Play className="h-4 w-4 fill-current shrink-0" aria-hidden="true" />
                   <span>Watch Ep {latestEpNum} · Priority Access</span>
@@ -189,10 +189,10 @@ export function HeroCarousel({
                 <button
                   type="button"
                   onClick={() => onToggleMyList(current.id)}
-                  className="inline-flex items-center gap-2 rounded-md border border-white/25 bg-[#1A1A1E]/80 px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-150 hover:bg-[#232329] whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FDBE11]"
+                  className="inline-flex items-center gap-2 rounded-md border border-white/25 bg-[#1A1A1E]/80 px-4 py-2.5 text-sm font-semibold text-white transition-colors duration-150 hover:bg-[#232329] whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF6B00]"
                 >
                   {isSaved ? (
-                    <Check className="h-4 w-4 text-[#FDBE11]" aria-hidden="true" />
+                    <Check className="h-4 w-4 text-[#FF6B00]" aria-hidden="true" />
                   ) : (
                     <Bookmark className="h-4 w-4" aria-hidden="true" />
                   )}
@@ -203,7 +203,7 @@ export function HeroCarousel({
               <button
                 type="button"
                 onClick={() => onSelectShow(current)}
-                className="inline-flex items-center gap-1.5 rounded-md border border-white/20 bg-[#1A1A1E]/75 px-4 py-2.5 text-sm font-medium text-[#E4E4E7] transition-colors duration-150 hover:text-white hover:bg-[#232329] whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FDBE11]"
+                className="inline-flex items-center gap-1.5 rounded-md border border-white/20 bg-[#1A1A1E]/75 px-4 py-2.5 text-sm font-medium text-[#E4E4E7] transition-colors duration-150 hover:text-white hover:bg-[#232329] whitespace-nowrap shrink-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF6B00]"
               >
                 <Info className="h-4 w-4" aria-hidden="true" />
                 <span>Details</span>
@@ -222,9 +222,9 @@ export function HeroCarousel({
                   aria-selected={idx === activeIndex}
                   aria-label={`Show slide ${idx + 1}: ${slide.title}`}
                   onClick={() => setActiveIndex(idx)}
-                  className={`h-1.5 rounded-full transition-all duration-200 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FDBE11] ${
+                  className={`h-1.5 rounded-full transition-all duration-200 cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF6B00] ${
                     idx === activeIndex
-                      ? 'w-8 bg-[#FDBE11]'
+                      ? 'w-8 bg-[#FF6B00]'
                       : 'w-2.5 bg-white/30 hover:bg-white/60'
                   }`}
                 />
@@ -236,7 +236,7 @@ export function HeroCarousel({
                 type="button"
                 onClick={goPrev}
                 aria-label="Previous featured show"
-                className="flex h-9 w-9 items-center justify-center rounded-md border border-white/15 bg-[#1A1A1E]/80 text-white transition-colors hover:bg-[#232329] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FDBE11]"
+                className="flex h-9 w-9 items-center justify-center rounded-md border border-white/15 bg-[#1A1A1E]/80 text-white transition-colors hover:bg-[#232329] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF6B00]"
               >
                 <ChevronLeft className="h-4 w-4" aria-hidden="true" />
               </button>
@@ -244,7 +244,7 @@ export function HeroCarousel({
                 type="button"
                 onClick={goNext}
                 aria-label="Next featured show"
-                className="flex h-9 w-9 items-center justify-center rounded-md border border-white/15 bg-[#1A1A1E]/80 text-white transition-colors hover:bg-[#232329] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FDBE11]"
+                className="flex h-9 w-9 items-center justify-center rounded-md border border-white/15 bg-[#1A1A1E]/80 text-white transition-colors hover:bg-[#232329] cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#FF6B00]"
               >
                 <ChevronRight className="h-4 w-4" aria-hidden="true" />
               </button>

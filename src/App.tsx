@@ -184,7 +184,7 @@ export default function App() {
     []
   );
 
-  const viuOriginals = useMemo(
+  const uwatchOriginals = useMemo(
     () => SHOW_CATALOG.filter((s) => s.isOriginal),
     []
   );
@@ -272,7 +272,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => handleSelectNav('Home')}
-                  className="text-xs font-semibold text-[#FDBE11] hover:text-[#FFD043] cursor-pointer"
+                  className="text-xs font-semibold text-[#FF6B00] hover:text-[#FF8533] cursor-pointer"
                 >
                   Back to Home
                 </button>
@@ -288,7 +288,7 @@ export default function App() {
                 </p>
                 <p className="mt-1.5 text-sm text-[#A1A1AA]">
                   {activeNav === 'My List'
-                    ? 'Bookmark dramas or variety shows anywhere in Viu to pick them up here.'
+                    ? 'Bookmark dramas or variety shows anywhere in UWatch to pick them up here.'
                     : 'Try clearing your search query or switching back to all regions.'}
                 </p>
                 <button
@@ -297,7 +297,7 @@ export default function App() {
                     handleResetFilters();
                     setActiveNav('Home');
                   }}
-                  className="mt-5 rounded-md bg-[#FDBE11] px-4 py-2 text-sm font-bold text-[#111113] hover:bg-[#FFD043] cursor-pointer"
+                  className="mt-5 rounded-md bg-[#FF6B00] px-4 py-2 text-sm font-bold text-[#111113] hover:bg-[#FF8533] cursor-pointer"
                 >
                   Browse Full Catalog
                 </button>
@@ -369,10 +369,10 @@ export default function App() {
             />
 
             <ContentRail
-              id="viu-originals"
-              title="Viu Originals"
+              id="uwatch-originals"
+              title="UWatch Originals"
               subtitle="Exclusive productions crafted for Asian audiences"
-              shows={viuOriginals}
+              shows={uwatchOriginals}
               variant="poster"
               myListIds={myListIds}
               signedInEmail={signedInEmail}
